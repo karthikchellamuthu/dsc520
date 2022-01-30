@@ -1,0 +1,106 @@
+---
+title: "Assignment_07.2 Students survey"
+author: "KarthikeyanChellamuthu"
+date: "30/01/2022"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+library(dplyr)
+library(Hmisc)
+library(ltm)
+library(ggplot2)
+library(magrittr)
+library(GGally)
+library(ggpubr)
+library(cowplot)
+library(ggm)
+setwd("C:/Users/LENOVO/Desktop/BU/DSC 520 T302-2221 winter 2021-22/GIT-Hub/dsc520-master/data")
+students <- read.csv("student-survey.csv")
+
+```
+
+## i. Use R to calculate the covariance of the Survey variables and provide an explanation of why you would use this calculation and what the results indicate.
+
+```{r inlcude = FALSE}
+str(students)
+head(students)
+
+```
+```{r}
+cov(students)
+```
+
+I can consider  covariance for TimeReading vs. Time TV since they are  same variable as related to time.  Since the units between the two are not identical the interpretation becomes fairly difficult to understand, but at the very least, the covariance output indicates that the two have a negative covariance. This means that as you spend more time reading you will spend less time watching TV and vice versa which makes sense in this case. 
+
+
+## ii.Examine the Survey data variables. What measurement is being used for the variables? Explain what effect changing the measurement being used for the variables would have on the covariance calculation. Would this be a problem? Explain and provide a better alternative if needed.
+
+Covariance cannot be compared over data sets with different scales. Large covariance means the relationship between two variables is strong. One problem with interpretation is with wide range of results that that makes it hard to interpret. It can be see that the covariance produced for Happiness and TimeTV is higher than TimeReading and Gender.
+
+## iii.Choose the type of correlation test to perform, explain why you chose this test, and make a prediction if the test yields a positive or negative correlation?
+
+ 
+I would choose pearson correlation as there is linear relationship between TimeReading vs TimeTv. Also, it can be see that correlation is negative. 
+
+```{R echo = FALSE}
+ggplot(students, aes(x = TimeReading, y = TimeTV, cor.method = "pearson")) + geom_point() + geom_smooth(method = lm)
+```
+##iv - 1. Correlation analysis for all variables
+Firstly, here is a correlation table for all the variables. All correlations for the gender variable will be ingored as this table output is generated using the pearson correlation method. And here are the results of the point-biserial correlation tests. 
+
+```{R echo = FALSE}
+ggpairs(students)
+```
+## iv-2. A single correlation between two of the variables
+```{r}
+cor.test(students$TimeReading, students$TimeTV)
+```
+## iv-3. Repeat your correlation test in step 2 but set the confidence interval at 99%
+
+```{r echo = FALSE}
+cor.test(students$TimeReading, students$TimeTV, conf.level = 0.99)
+
+```
+## iv-Describe what the calculations in the correlation matrix suggest about the relationship between the variables. Be specific with your explanation.
+
+4. t value is -5.6457, degree of freedom(df) if 9, p-value is 0.0003153, confidence interval is 99%. Alpha = 0.05. Since the p-value is less than alpha, TimeReading and TimeTV are significantly correlated.
+
+
+
+ 
+
+## v. Calculate the correlation coefficient(Done in the previous step) and the coefficient of determination, describe what you conclude about the results. 
+
+```{r corr, echo = FALSE}
+cor(students)
+```
+```{r echo = FALSE}
+cor(students)^2
+``` 
+
+
+
+## vi. Based on your analysis can you say that watching more TV caused students to read less? Explain.
+Yes, watching more TV has caused students to read less. This can be validated using below. Correlation coefficient which is -0.88. Negative correlation indicates means TimeReading to TimeTV linear relationship in opposite direction. Also, coefficient of determination is 77% which validates the above point. 
+
+
+## vii. Pick three variables and perform a partial correlation, documenting which variable you are "controlling". Explain how this changes your interpretation and explanation of the results. 
+I chose to look at the correlation between time spent watching tv (TimeTV) and Happiness, while controlling for time spent reading. Since time spent reading drastically influenced time spent watching TV I wanted to see how much watching TV correlated to happiness while controlling for time spent reading.
+
+``` {r, include = FALSE}
+library(ggm)
+pcr1 <- pcor(c("TimeTV", "Happiness", "TimeReading"), var(students))
+```
+``` {r}
+# Partial Correlation of TimeTv vs. Happiness, while controlling for "TimeReading"
+pcr1
+# R^2 of TimeTV vs. Happiness, while controlling for "TimeReading"
+pcr1 * pcr1 
+```
+##Output shows the partial correlation between TimeTV and Happiness with Gender was control parameter. It can be see that partial correlation is 0.59. pc^2 results in 0.35 which mean Happiness accounts for 40% of TimeTV. Inclusion of Gender has impact on Happiness on TimeTV. Also, P-value(0.04) is less than 0.5.
