@@ -1,0 +1,175 @@
+---
+title: "Assignment_08_Housing Data"
+author: "Karthikeyan Chellamuthu"
+date: "13/02/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+
+library(ggplot2)
+library(readxl)
+library(QuantPsyc)
+library(fitdistrplus)
+library("dplyr")
+library("plyr")
+library(magrittr)
+library(ggpubr)
+library(ggm)
+
+
+setwd("D:/BU/DSC 520 T302-2221 winter 2021-22/GIT-Hub/dsc520-master/data")
+
+
+# Import "week-7-housing.xlsx" for analysis and create a data frame
+Housing <- read_excel("week-7-housing.xlsx")
+
+```
+
+```{r test, echo=FALSE}
+names(Housing) <- c("Sale_Date", "Sale_Price", "sale_reason", "sale_instrument", "sale_warning", "site_type", "addr_full", "zip5", "ctyname", "postalctyn", "lon", "lat", "building_grade", "square_feet_total_living", "bedrooms", "bath_full_count", "bath_half_count", "batch_3qtr_count", "year_built", "year_renovated", "current_zoning", "sq_ft_lot", "prop_type", "present_use")
+head(Housing)
+```
+###7.1.b Create two variables; one that will contain the variables Sale Price and Square Foot of Lot (same variables used from previous assignment on simple regression) and one that will contain Sale Price, Bedrooms, and Bath Full Count as predictors.  
+
+```{r var, echo=FALSE}
+var1 <- lm(Sale_Price ~ sq_ft_lot, data = Housing)
+var2 <- lm(Sale_Price ~ bedrooms + bath_full_count, data = Housing)
+```
+
+##7.1.c Execute a summary() function on two variables defined in the previous step to compare the model results. What are the R2 and Adjusted R2 statistics?  Explain what these results tell you about the overall model. Did the inclusion of the additional predictors help explain any large variations found in Sale Price?
+```{r summr, echo=FALSE}
+summary(var1)
+summary(var2)
+
+```
+###7.1.d Considering the parameters of the multiple regression model you have created. What are the standardized betas for each parameter and what do the values indicate?
+```{r standardized beta, echo=FALSE}
+lm.beta(var1)
+lm.beta(var2)
+sd(Housing$Sale_Price)
+sd(Housing$sq_ft_lot)
+sd(Housing$bedrooms)
+sd(Housing$bath_full_count)
+```
+
+###7.1.e Calculate the confidence intervals for the parameters in your model and explain what the results indicate.
+```{r confidence interval, echo=FALSE}
+confint(var1)
+confint(var2)
+```
+
+###7.1.f Assess the improvement of the new model compared to your original model (simple regression model) by testing whether this change is significant by performing an analysis of variance.
+
+```{r, echo=FALSE}
+anova(var2, var1)
+```
+
+###7.1.g. Perform casewise diagnostics to identify outliers and/or influential cases, storing each functions output in a dataframe assigned to a unique variable name.
+
+```{r, echo=FALSE}
+Housing$resid <- resid(var2)
+Housing$stand.resid <- rstandard(var2)
+Housing$stud.resid <- rstudent(var2)
+Housing$cooks.dist <- cooks.distance(var2)
+Housing$dfbeta <- dfbeta(var2)
+Housing$dffit <- dffits(var2)
+Housing$leverage <- hatvalues(var2)
+Housing$cov.ratio <- covratio(var2)
+```
+
+```{r, echo=FALSE}
+str(Housing)
+```
+###7.1.h. Calculate the standardized residuals using the appropriate command, specifying those that are +-2, storing the results of large residuals in a variable you create.
+```{r, echo=FALSE}
+Housing$large.resid <- Housing$stand.resid > 2 |
+Housing$stand.resid < -2
+```
+
+###7.1.i. Use the appropriate function to show the sum of large residuals.
+
+```{r, echo=FALSE}
+sum(Housing$large.resid)
+
+```
+
+###7.1.j Which specific variables have large residuals (only cases that evaluate as TRUE)?
+```{r, echo=FALSE}
+large_resid.df <- Housing[Housing$large.resid, c("Sale_Price", "zip5",  "building_grade", "square_feet_total_living", "bedrooms", "bath_full_count", "bath_half_count", "batch_3qtr_count", "year_built", "sq_ft_lot", "stand.resid")]
+
+large_resid.df[1:10,]
+
+```
+
+###7.1.k Investigate further by calculating the leverage, cooks distance, and covariance rations. Comment on all cases that are problematics.
+```{r, echo=FALSE}
+large_resid.df2 <- Housing[Housing$large.resid, c("cooks.dist", "leverage", "cov.ratio")]
+```
+```{r, echo=FALSE}
+subset(large_resid.df2, cooks.dist > 1)
+
+```
+
+There is just one case which has cooks distance greater than 1. Value greater than 1 may be influencing the model. 
+
+Leverage is calculated using `(k + 1/n)` = `(2+1/12865)` = `0.0002`. We will look for values either twice as large as this (0.0004) or three times as large (0.0006). Cases with large leverage values will not necessarily have a large influence on the regression coefficients as they are measure on the outcome variables rather than the predictors.
+  + `r nrow(subset(large_resid.df2, leverage > 0.0002))` cases > 0.0002.
+  + `r nrow(subset(large_resid.df2, leverage > 0.0004))` cases > 0.0004, 2 times average.
+  + `r nrow(subset(large_resid.df2, leverage > 0.0006))` cases > 0.0006. 3 times average.
+
+Covariance upper limit is calculated by formula `1 + 3 times Average Leverage` = `1 + 3*0.0002` = `1.0006` and Covariance lower limit is calculated by formula `1 - 3 times Average Leverage` = `1 - 3*0.0004` = `0.9994`. In our model, `r nrow(subset(large_resid.df2, cov.ratio < 0.9994 | cov.ratio > 1.0006))` cases which are falling outside these limits which may be a little cause for alarm.
+
+
+###7.1.l Perform the necessary calculations to assess the assumption of independence and state if the condition is met or not.
+```{r, echo=FALSE}
+library(car)
+dwt(var2)
+```
+
+###7.1.m Perform the necessary calculations to assess the assumption of no multicollinearity and state if the condition is met or not.
++ VIF:
+```{r, echo=FALSE}
+vif(var2)
+```
++ Tolerance:
+```{r, echo=FALSE}
+1/vif(var2)
+```
+
++ Mean VIF:
+```{r, echo=FALSE}
+mean(vif(var2))
+```
+VIF values are below 10 and tolerance statistics are above 0.2. Hence, there is no collinearity within the data. 
+
+###7.1.n Visually check the assumptions related to the residuals using the plot() and hist() functions. Summarize what each graph is informing you of and if any anomalies are present.
+```{r, echo=FALSE}
+layout(matrix(c(1,2,3,4),2,2))
+plot(var2)
+```
+
+```{r, echo=FALSE}
+hist(Housing$stud.resid, freq=FALSE, main="Distribution of Studentized Residuals")
+xfit<-seq(min(Housing$stud.resid),max(Housing$stud.resid),length=100) 
+yfit<-dnorm(xfit) 
+lines(xfit, yfit)
+```
+Residual vs Fitted graph: Residuals in the model shows random distribution, which is the assumption of linearity. Hence it can be said that our model heteroscedasticity, randomness and linearity have been met.  
+Plot: Residuals in our plot deviate from normality and the dots are very distant from the line, which indicates deviation from normality.
+Hist functions: By looking at the distribution, deviation from normality is at extremes. The bell curve shows normal distribution for most of the data, but due to extremes non-normality can be assumed.
+
+
+###7.1.o Overall, is this regression model unbiased?  If an unbiased regression model, what does this tell us about the sample vs. the entire population model?
+
+```{r, echo=FALSE}
+mean(vif(var2))
+```
+
+
+From above, mean of VIF is close to 1. Hence model is unbiased. 
