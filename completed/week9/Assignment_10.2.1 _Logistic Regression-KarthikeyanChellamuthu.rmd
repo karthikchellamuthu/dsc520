@@ -1,0 +1,62 @@
+---
+title: "Karthikeyan Chellamuthu_10.2.1"
+author: "Karthikeyan Chellamuthu"
+date: "2/19/2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE, message=FALSE}
+# Setup Work Directory where document is present
+library(foreign)
+library(caret)
+library(ROCR)
+library(car)
+library(caTools)
+options(scipen = 999)
+setwd("D:/BU/DSC 520 T302-2221 winter 2021-22/GIT-Hub/dsc520-master/data")
+Thoraric_Surgery <- read.arff("ThoraricSurgery.arff")
+```
+
+## 10.2.a Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.
+
+```{r echo=FALSE}
+# 70% of data is split into training and 30% into test.
+set.seed(15)
+split <- sample.split(Thoraric_Surgery$Risk1Yr,SplitRatio = 0.7)
+
+training_df <- subset(Thoraric_Surgery,split==TRUE)
+test_df <- subset(Thoraric_Surgery,split==FALSE)
+```
+
+```{r}
+glm1 <- glm(Risk1Yr ~ .,family = binomial(),data = training_df)
+```
+
+## 10.2.b According to the summary, which variables had the greatest effect on the survival rate?
+
+```{r echo=FALSE}
+summary(glm1)
+```
+From above, PRE7, PRE9 and PRE14 have the greatest effect on survival rate as P < 0.05.
+
+```{R}
+glm1 <- glm(Risk1Yr ~ PRE7+PRE9+PRE14,family = binomial(), data = training_df)
+```
+
+## 10.2.c To compute the accuracy of your model, use the dataset to predict the outcome variable. The percent of correct predictions is the accuracy of your model. What is the accuracy of your model?
+
+```{r echo=FALSE}
+test_pred <- ifelse(predict(glm1, newdata = test_df, type = "response") > 0.5, "Yes", "No")
+test_tab <- table(predicted = test_pred, actual = test_df$Risk1Yr)
+
+```
+Prediction matrix
+```{r echo=FALSE}
+test_tab
+accuracy <- sum(diag(test_tab))/sum(test_tab)
+```
+
+Accuracy of the model is `r accuracy`
