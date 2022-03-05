@@ -25,7 +25,7 @@ cluster_data <- read.csv("clustering-data.csv")
 str(cluster_data)
 ```
 
-## 9.3.a Plot the dataset using a scatter plot.
+## 11.2.a Plot the dataset using a scatter plot.
 ```{r echo=FALSE}
 plot1 <- ggplot(cluster_data, aes(x, y)) +
   geom_point(alpha = 0.4) +
@@ -35,7 +35,7 @@ plot1 <- ggplot(cluster_data, aes(x, y)) +
 plot1
 ```
 
-## 9.3.b Fit the dataset using the k-means algorithm from  k=2 to k=12. Create a scatter plot of the resultant clusters for each value of k.
+## 11.2.b Fit the dataset using the k-means algorithm from  k=2 to k=12. Create a scatter plot of the resultant clusters for each value of k.
 ```{r echo=FALSE}
 kMeansCluster <- list()   ### empty list
 
@@ -49,7 +49,7 @@ for (i in 2:12){
 }
 ```
 
-## 9.3.c Calculate this average distance from the center of each cluster for each value of k and plot it as a line chart where k is the x-axis and the average distance is the y-axis.
+## 11.2.c Calculate this average distance from the center of each cluster for each value of k and plot it as a line chart where k is the x-axis and the average distance is the y-axis.
 
 ```{r echo=FALSE}
 
@@ -62,7 +62,7 @@ plot(1:12, withinSqrtSum, type="b", xlab = "K Value - Number of Clusters", ylab 
 
 ```
 
-## 9.3.d One way of determining the “right” number of clusters is to look at the graph of k versus average distance and finding the “elbow point”. Looking at the graph you generated in the previous example, what is the elbow point for this dataset?
+## 11.2.d One way of determining the “right” number of clusters is to look at the graph of k versus average distance and finding the “elbow point”. Looking at the graph you generated in the previous example, what is the elbow point for this dataset?
 
 
 For k=5, between_ss/total_ss ratio tends to change slowly and remain less changing as compared to other k’s. Hence data k=5 should be a good choice for number of clusters.

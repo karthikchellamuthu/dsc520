@@ -31,7 +31,7 @@ str(binry_classifier)
 str(trinry_classifier)
 ```
 
-## 9.2.a Plot the data from each dataset using a scatter plot.
+##11.2.a Plot the data from each dataset using a scatter plot.
 ```{r echo=FALSE}
 plot1 <- ggplot(binry_classifier, aes(x, y, color=label)) +
   geom_point(shape=1) +
@@ -48,7 +48,7 @@ plot1
 plot2
 ```
 
-## 9.2.b Fit a k nearest neighbors model for each dataset for k=3, k=5, k=10, k=15, k=20, and k=25. Compute the accuracy of the resulting models for each value of k. Plot the results in a graph where the x-axis is the different values of k and the y-axis is the accuracy of the model.
+## 11.2.b Fit a k nearest neighbors model for each dataset for k=3, k=5, k=10, k=15, k=20, and k=25. Compute the accuracy of the resulting models for each value of k. Plot the results in a graph where the x-axis is the different values of k and the y-axis is the accuracy of the model.
 
 ```{r echo=FALSE}
 ## Binary classifier 
@@ -108,6 +108,6 @@ AccuPlot1
 AccuPlot2
 ```
 
-## 9.2.c Looking back at the plots of the data, do you think a linear classifier would work well on these datasets?
+## 11.2.c Looking back at the plots of the data, do you think a linear classifier would work well on these datasets?
 
 I don't believe linear classifier would work on these datasets. Scatter plot on these datasets shows the same.  
