@@ -1,0 +1,113 @@
+---
+title: "Karthikeyan Chellamuthu 11.2.1 Exercise  Machine Learning "
+author: "Karthikeyan Chellamuthu"
+date: "03/05/2022"
+output: word
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE, message=FALSE}
+# Setup Work Directory where document is present
+library(class)
+library(ggplot2)
+library(cowplot)
+library(caret)
+options(scipen = 999)
+setwd("D:/BU/DSC 520 T302-2221 winter 2021-22/GIT-Hub/dsc520-master/data")
+binry_classifier <- read.csv("binary-classifier-data.csv")
+trinry_classifier <- read.csv("trinary-classifier-data.csv")
+```
+
+## Structure of binary classifier
+```{r echo=FALSE}
+str(binry_classifier)
+```
+
+## Structure of trinary classifier
+```{r echo=FALSE}
+str(trinry_classifier)
+```
+
+## 9.2.a Plot the data from each dataset using a scatter plot.
+```{r echo=FALSE}
+plot1 <- ggplot(binry_classifier, aes(x, y, color=label)) +
+  geom_point(shape=1) +
+  labs(title="Scatter plot: Binary Classifier Data") +
+  theme_bw()
+
+plot2 <- ggplot(trinry_classifier, aes(x, y, color=label)) +
+  geom_point(shape=1) + 
+  labs(title="Scatter plot: Trinary Classifier Data")  + 
+  theme_bw()
+
+plot1
+
+plot2
+```
+
+## 9.2.b Fit a k nearest neighbors model for each dataset for k=3, k=5, k=10, k=15, k=20, and k=25. Compute the accuracy of the resulting models for each value of k. Plot the results in a graph where the x-axis is the different values of k and the y-axis is the accuracy of the model.
+
+```{r echo=FALSE}
+## Binary classifier 
+trainindex=createDataPartition(binry_classifier$label, p=0.6)$Resample1
+trainBin=binry_classifier[trainindex,] 
+testBin=binry_classifier[-trainindex,]
+
+kMatrix = c(3, 5, 10, 15, 20, 25)
+accBin <- c() ### empty vector
+index = 0
+for (i in kMatrix) { 
+        index = index + 1
+        kModBin <-  knn(train=trainBin, test=testBin, cl=trainBin$label, k=i )
+        plot <- ggplot(binry_classifier, aes(x, y, color=label)) +
+  geom_point(shape=1) +
+  labs(title="Scatter plot: Binary classifier") +
+  theme_bw()
+        accBin[index] <- 100 * sum(testBin$label == kModBin)/NROW(testBin$label)
+    }
+
+
+## Trinary classifier
+trainindex=createDataPartition(trinry_classifier$label, p=0.6)$Resample1
+trainTrn=trinry_classifier[trainindex,] 
+testTrn=trinry_classifier[-trainindex,]
+
+kMatrix = c(3, 5, 10, 15, 20, 25)
+accTrn <- c() ### empty vector
+index = 0
+for (i in kMatrix) { 
+        index = index + 1
+        kModTrn <-  knn(train=trainTrn, test=testTrn, cl=trainTrn$label, k=i )
+        accTrn[index] <- 100 * sum(testTrn$label == kModTrn)/NROW(testTrn$label)
+}
+
+bin_data <- data.frame(kMatrix,accBin)
+names(bin_data) <- c("K","Accuracy")
+
+tri_data <- data.frame(kMatrix,accTrn)
+names(tri_data) <- c("K","Accuracy")
+
+## Plot Accuracy matrix now
+
+AccuPlot1 <- ggplot(bin_data, aes(x = K, y = Accuracy)) +
+  geom_line(linetype = "dashed", color="red") +
+  geom_point() +
+  labs(title="kNN Model Accuracy Plot: Binary classifier") +
+  theme_bw()
+
+AccuPlot2 <- ggplot(tri_data, aes(x = K, y = Accuracy)) +
+  geom_line(linetype = "dashed", color="red") +
+  geom_point() +
+  labs(title="kNN Model Accuracy Plot: Trinary classifier") +
+  theme_bw()
+
+AccuPlot1
+AccuPlot2
+```
+
+## 9.2.c Looking back at the plots of the data, do you think a linear classifier would work well on these datasets?
+
+I don't believe linear classifier would work on these datasets. Scatter plot on these datasets shows the same.  
